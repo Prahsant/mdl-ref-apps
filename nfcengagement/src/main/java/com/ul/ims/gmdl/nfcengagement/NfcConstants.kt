@@ -61,6 +61,22 @@ class NfcConstants {
             0x6D, 0x44, 0x4C
         )
 
+        private val hsRecordPayloadNfc: ByteArray = byteArrayOfInts(
+            // ac record
+            0x15, // version 1.5
+            0xD1, // record header, TNF = 001 (Well known type)
+            0x02, // record type length = 2 bytes
+            0x0A, // payload length = 10 bytes
+            0x61, 0x63, // record type = "ac"
+            0x01, // carrier flags. CPS = 1 "active"
+            0x03, // carrier data reference length = 1
+            0x6E, 0x66, 0x63, // carrier data reference = "nfc"
+            0x01, // auxiliary data reference count: 1
+            0x03, // auxiliary data reference length = 3
+            // auxiliary reference = "mDL"
+            0x6D, 0x44, 0x4C
+        )
+
         private const val bluetoothLERecordTNF: Short = 0x02 // type = RFC 2046 (MIME)
         // type name = "application/vnd.bluetooth.le.oob"
         private val bluetoothLERecordType: ByteArray = "application/vnd.bluetooth.le.oob".toByteArray()
@@ -71,6 +87,11 @@ class NfcConstants {
         private val wifiAwareRecordType = "application/vnd.wfa.nan".toByteArray()
         private val wifiAwareRecordId = "W".toByteArray()
 
+        // NFC Carrier Data Record
+        private const val nfcRecordTNF: Short = 0x04 // type = external
+        private val nfcRecordType = "iso.org:18013".toByteArray()
+        private val nfcRecordId = "nfc".toByteArray()
+
         private const val deviceEngagementTNF: Short = 0x04 // type = external
         // type name = "iso.org:18013:deviceengagement"
         private val deviceEngagementType: ByteArray = "iso.org:18013:deviceengagement".toByteArray()
@@ -80,6 +101,8 @@ class NfcConstants {
         private val hcRecord = NdefRecord(hsRecordTNF, hsRecordType, hsRecordId, hsRecordPayload)
         private val hcRecordWifi =
             NdefRecord(hsRecordTNF, hsRecordType, hsRecordId, hsRecordPayloadWifi)
+        private val hcRecordNfc =
+            NdefRecord(hsRecordTNF, hsRecordType, hsRecordId, hsRecordPayloadNfc)
 
         fun createBLEStaticHandoverRecord(
             deviceEngagementPayload: ByteArray,
@@ -197,6 +220,33 @@ class NfcConstants {
             )
 
             return NdefMessage(arrayOf(hcRecordWifi, wifiAwareRecord, deviceEngagementRecord))
+        }
+        
+        fun createNfcStaticHandoverRecord(
+            deviceEngagementPayload: ByteArray
+        ): NdefMessage {
+
+            //NFC carrier data record payload
+            val payload = listOf<Byte>(
+                0x10, // version 1.0
+                0x10 // TODO check 7816-4 for Max length of command data field supported by mobile
+            )
+
+            val nfcRecord = NdefRecord(
+                nfcRecordTNF,
+                nfcRecordType,
+                nfcRecordId,
+                payload.toByteArray()
+            )
+
+            val deviceEngagementRecord = NdefRecord(
+                deviceEngagementTNF,
+                deviceEngagementType,
+                deviceEngagementId,
+                deviceEngagementPayload
+            )
+
+            return NdefMessage(arrayOf(hcRecordNfc, nfcRecord, deviceEngagementRecord))
         }
     }
 }

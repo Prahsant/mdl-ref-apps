@@ -136,6 +136,8 @@ class ShareCredentialsNfcFragment : Fragment() {
                 // Update UI
                 vm.isWifiEnabled(false)
             }
+        }  else if (TransferChannels.NFC == transferMethod) {
+            shouldRequestPermission()
         } else {
             throw UnsupportedOperationException("Unsupported transfer method")
         }

@@ -19,7 +19,11 @@ package com.ul.ims.gmdl.fragment
 import android.bluetooth.BluetoothAdapter
 import android.content.Intent
 import android.nfc.NfcAdapter
+import android.nfc.NfcAdapter.FLAG_READER_NFC_A
 import android.nfc.NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK
+import android.nfc.Tag
+import android.nfc.tech.IsoDep
+import android.os.AsyncTask
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -42,6 +46,7 @@ import com.ul.ims.gmdl.offlinetransfer.transportLayer.TransferChannels
 import com.ul.ims.gmdl.offlinetransfer.utils.Resource
 import com.ul.ims.gmdl.viewmodel.OfflineTransferStatusViewModel
 import kotlinx.android.synthetic.main.fragment_offline_transfer_status.*
+import java.util.*
 
 /**
  * A simple [Fragment] subclass.
@@ -88,7 +93,10 @@ class OfflineTransferStatusFragment : Fragment() {
     override fun onResume() {
         super.onResume()
 
-        nfcAdapter?.enableReaderMode(activity, null, FLAG_READER_SKIP_NDEF_CHECK, null)
+        nfcAdapter?.enableReaderMode(activity,
+                                    ReaderModeCallback(),
+                                FLAG_READER_NFC_A or FLAG_READER_SKIP_NDEF_CHECK,
+                                null)
     }
 
     override fun onPause() {
@@ -113,7 +121,7 @@ class OfflineTransferStatusFragment : Fragment() {
                 setupWiFiVerifier()
             }
             TransferChannels.NFC -> {
-                throw UnsupportedOperationException("NFC Transfer not currently supported")
+                //NFC setup is done once NFC Tag is discovered
             }
         }
     }
@@ -138,6 +146,18 @@ class OfflineTransferStatusFragment : Fragment() {
         deviceEngagement?.let {de ->
             requestItems?.let { req ->
                 vm.setupWiFiVerifier(de, req, wifiPassphrase)
+            } ?: kotlin.run {
+                Log.e(LOG_TAG, "Data Items List is null")
+            }
+        } ?: kotlin.run {
+            Log.e(LOG_TAG, "Device Engagement is null")
+        }
+    }
+
+    private fun setupNfcVerifier(nfcTag: Tag) {
+        deviceEngagement?.let {de ->
+            requestItems?.let { req ->
+                vm.setupNfcVerifier(de, req, nfcTag)
             } ?: kotlin.run {
                 Log.e(LOG_TAG, "Data Items List is null")
             }
@@ -256,5 +276,34 @@ class OfflineTransferStatusFragment : Fragment() {
     fun requestToTurnOnBle() {
         val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
         startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT)
+    }
+
+    private inner class VerifierSetupTask : AsyncTask<Tag, Void, Void>() {
+
+        override fun doInBackground(vararg params: Tag): Void? {
+            val tag = params[0]
+            setupNfcVerifier(tag)
+            return null
+        }
+    }
+    private inner class ReaderModeCallback : NfcAdapter.ReaderCallback {
+
+        override fun onTagDiscovered(tag: Tag) {
+
+            // Tell the adapter to ignore this tag for any consecutive reads. debounceMs needs to be
+            //  greater than the polling interval of the adapter
+            nfcAdapter!!.ignore(tag, 1000, null, null)
+
+            val techList = tag.techList
+
+            Log.d(this.javaClass.simpleName, "Tag discovered: supported tech=" + Arrays.toString(techList))
+
+            for (tech in techList) {
+                if (IsoDep::class.java.name == tech) {
+                    VerifierSetupTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, tag)
+                    break
+                }
+            }
+        }
     }
 }

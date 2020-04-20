@@ -21,6 +21,7 @@ import android.nfc.cardemulation.HostApduService
 import android.os.Bundle
 import android.util.Log
 import com.ul.ims.gmdl.nfcengagement.NfcConstants.Companion.createBLEStaticHandoverRecord
+import com.ul.ims.gmdl.nfcengagement.NfcConstants.Companion.createNfcStaticHandoverRecord
 import com.ul.ims.gmdl.nfcengagement.NfcConstants.Companion.createWiFiAwareStaticHandoverRecord
 import com.ul.ims.gmdl.nfcengagement.NfcConstants.Companion.statusWordEndOfFileReached
 import com.ul.ims.gmdl.nfcengagement.NfcConstants.Companion.statusWordFileNotFound
@@ -52,7 +53,9 @@ class NfcHandler : HostApduService() {
         SELECT_FILE,
         READ_BINARY,
         UPDATE_BINARY,
-        OTHER
+        OTHER,
+        ENVELOPE,
+        GET_RESPONSE
     }
 
     private val capabilityContainerFileId = byteArrayOfInts(0xE1, 0x03)
@@ -103,6 +106,10 @@ class NfcHandler : HostApduService() {
                             wifiPassphrase,
                             wifi5GHzBandSupported
                         )
+                    } else if (channel == TransferChannels.NFC) {
+                        setupNfcHandover(
+                            deviceEngagementPayload
+                        )
                     }
                 }
             }
@@ -147,6 +154,25 @@ class NfcHandler : HostApduService() {
         fileSystem = listOf(capabilityContainerFile, ndefFile)
     }
 
+    private fun setupNfcHandover(
+        deviceEngagementPayload: ByteArray
+    ) {
+        val handoverRecord =
+            createNfcStaticHandoverRecord(
+                deviceEngagementPayload
+            )
+        val ndefFileContent =
+            intAsTwoBytes(handoverRecord.byteArrayLength).plus(handoverRecord.toByteArray())
+        var fileContentHex : StringBuffer = StringBuffer()
+        for(b in ndefFileContent) {
+            fileContentHex.append(String.format("%02X ", b))
+        }
+        Log.d(TAG, "ndef file content $fileContentHex")
+        val ndefFile = File(ndefFileId, ndefFileContent)
+
+        fileSystem = listOf(capabilityContainerFile, ndefFile)
+    }
+
     override fun processCommandApdu(commandApdu: ByteArray?, extras: Bundle?): ByteArray {
         Log.d(TAG, "Command -> " + toHexString(commandApdu))
 
@@ -156,6 +182,8 @@ class NfcHandler : HostApduService() {
             CommandType.READ_BINARY -> handleReadBinary(commandApdu)
             CommandType.UPDATE_BINARY -> handleUpdateBinary()
             CommandType.OTHER -> statusWordInstructionNotSupported
+            CommandType.ENVELOPE -> TODO()
+            CommandType.GET_RESPONSE -> TODO()
         }
 
         Log.d(TAG, "Response -> " + toHexString(response))
@@ -181,6 +209,10 @@ class NfcHandler : HostApduService() {
                 return CommandType.READ_BINARY
             } else if (ins == 0xD6) {
                 return CommandType.UPDATE_BINARY
+            } else if (ins == 0xC3) {
+                return CommandType.ENVELOPE
+            } else if (ins == 0xC0) {
+                return CommandType.GET_RESPONSE
             }
         }
 

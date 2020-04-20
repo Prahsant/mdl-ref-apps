@@ -17,6 +17,7 @@
 package com.ul.ims.gmdl.offlineTransfer
 
 import android.content.Context
+import android.nfc.Tag
 import com.ul.ims.gmdl.cbordata.security.CoseKey
 import com.ul.ims.gmdl.offlinetransfer.config.AppMode
 import com.ul.ims.gmdl.offlinetransfer.config.BleServiceMode
@@ -37,6 +38,8 @@ class OfflineTransferManager {
         private var wifiPassphrase: String? = null
         // coseKey
         private var coseKey: CoseKey? = null
+        //NFC Tag
+        private var nfcTag: Tag? = null
 
         fun setCoseKey(coseKey: CoseKey) = apply {
             this.coseKey = coseKey
@@ -62,6 +65,10 @@ class OfflineTransferManager {
             this.bleServiceMode = bleServiceMode
         }
 
+        fun setNfcTag(nfcTag : Tag) = apply {
+            this.nfcTag = nfcTag
+        }
+
         fun build() : CborManager {
             context?.let { ctx ->
                 actAs?.let { actor ->
@@ -74,7 +81,8 @@ class OfflineTransferManager {
                                     transferChannel,
                                     bleMode,
                                     ck.getPublicKey().encoded,
-                                    wifiPassphrase
+                                    wifiPassphrase,
+                                    nfcTag
                                 )
                                 else -> throw IllegalArgumentException("Mandatory fields not set")
                             }

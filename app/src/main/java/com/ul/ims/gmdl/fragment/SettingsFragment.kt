@@ -112,6 +112,25 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         // NFC
+        val nfcTransferMethod = preferenceManager.
+            findPreference<Preference>("transfer_method_nfc")
+                as? CheckBoxPreference
+
+        if (nfcAdapter != null) {
+            nfcTransferMethod?.let {
+                it.onPreferenceClickListener = transferMethodsListener
+                transferMethods.add(it)
+            }
+        } else {
+            // Disable NFC Selection
+            nfcTransferMethod?.apply {
+                this.isEnabled = false
+                this.isChecked = false
+            }
+            Log.d(LOG_TAG, "NFC is not available")
+        }
+
+        // NFC
         val nfcEngagementMethod = preferenceManager.
             findPreference<Preference>("engagement_method_nfc")
                     as? CheckBoxPreference

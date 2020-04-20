@@ -17,6 +17,8 @@
 package com.ul.ims.gmdl.viewmodel
 
 import android.app.Application
+import android.nfc.Tag
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
@@ -122,6 +124,42 @@ class OfflineTransferStatusViewModel(val app : Application) : AndroidViewModel(a
                                     liveDataMerger.value = it
                                 }
                             }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fun setupNfcVerifier(
+        deviceEngagement: DeviceEngagement,
+        requestItems: Array<String>,
+        nfcTag: Tag) {
+        Log.d("OfflineTransferStatusViewModel", "Setting up NfcVerifier.")
+        doAsync {
+            coseKey = deviceEngagement.security?.coseKey
+
+            coseKey?.let { key ->
+                val builder = OfflineTransferManager.Builder()
+                    .actAs(AppMode.VERIFIER)
+                    .setContext(app.applicationContext)
+                    .setDataType(DataTypes.CBOR)
+                    .setTransferChannel(TransferChannels.NFC)
+                    .setNfcTag(nfcTag)
+                    .setCoseKey(key)
+
+                try {
+                    offlineTransferVerifier = builder.build()
+                    offlineTransferVerifier?.setupVerifier(key, requestItems, deviceEngagement)
+                    Log.d(
+                        "OfflineTransferStatusViewModel",
+                        "Setup NfcVerifier done from CborManager also."
+                    )
+                } catch (e: Exception) { e.printStackTrace() }
+                uiThread {
+                    offlineTransferVerifier?.data?.let {livedata ->
+                        liveDataMerger.addSource(livedata) {
+                            liveDataMerger.value = it
                         }
                     }
                 }

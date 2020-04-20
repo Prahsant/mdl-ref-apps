@@ -202,6 +202,7 @@ class ShareCredentialsNfcViewModel(val app: Application) : AndroidViewModel(app)
                 when (transferMethod) {
                     TransferChannels.BLE -> setupBleHolder(deviceEngagement, bleServiceMode)
                     TransferChannels.WiFiAware -> setupWiFiHolder(deviceEngagement)
+                    TransferChannels.NFC -> setupNfcHolder(deviceEngagement)
                     else -> throw IdentityCredentialException("Unsupported transfer method: $transferMethod")
                 }
 
@@ -242,6 +243,17 @@ class ShareCredentialsNfcViewModel(val app: Application) : AndroidViewModel(app)
             btnEnableBtVisibility.set(View.GONE)
         } else {
             permissionRequestText.set(app.applicationContext.getString(R.string.wifi_disabled_txt))
+            permissionRequestVisibility.set(View.VISIBLE)
+            btnEnableBtVisibility.set(View.GONE)
+        }
+    }
+
+    fun isNfcEnabled(isEnabled: Boolean) {
+        if (isEnabled) {
+            permissionRequestVisibility.set(View.GONE)
+            btnEnableBtVisibility.set(View.GONE)
+        } else {
+            permissionRequestText.set(app.applicationContext.getString(R.string.nfc_disabled_txt))
             permissionRequestVisibility.set(View.VISIBLE)
             btnEnableBtVisibility.set(View.GONE)
         }
@@ -297,6 +309,28 @@ class ShareCredentialsNfcViewModel(val app: Application) : AndroidViewModel(app)
                 iofflineTransferHolder?.let { holder ->
                     setupOfflineTransferHolder(holder, deviceEngagement)
                 }
+            }
+        }
+    }
+
+    private fun setupNfcHolder(deviceEngagement: DeviceEngagement) {
+        doAsync {
+            val coseKey = deviceEngagement.security?.coseKey
+
+            coseKey?.let {
+                val builder = OfflineTransferManager.Builder()
+                    .actAs(AppMode.HOLDER)
+                    .setContext(app.applicationContext)
+                    .setDataType(DataTypes.CBOR)
+                    .setTransferChannel(TransferChannels.NFC)
+                    .setCoseKey(coseKey)
+
+                try {
+                    iofflineTransferHolder = builder.build()
+                    iofflineTransferHolder?.let { holder ->
+                        setupOfflineTransferHolder(holder, deviceEngagement)
+                    }
+                } catch (e: Exception) { e.printStackTrace() }
             }
         }
     }

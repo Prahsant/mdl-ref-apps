@@ -133,13 +133,18 @@ class NfcEngagementActivity : AppCompatActivity() {
 
                 if (deviceEngagementBytes.isPresent) {
                     val resultIntent = Intent()
-
+                    var deviceEngagementHex : StringBuffer = StringBuffer()
+                    for(b in deviceEngagementBytes.get()) {
+                        deviceEngagementHex.append(String.format("%02X ", b))
+                    }
+                    Log.d("NfcEngagementActivity", "Device engagement bytes $deviceEngagementHex")
                     resultIntent.putExtra(DEVICE_ENGAGEMENT_RESULT, deviceEngagementBytes.get())
 
                     val transferMethod = handoverSelectMessage.getTransferMethod()
                     if (transferMethod.isPresent) {
                         resultIntent.putExtra(EXTRA_TRANSFER_METHOD, transferMethod.get())
                     }
+                    Log.d("NfcEngagementActivity", "Transfer method is ${transferMethod.get()}")
 
                     val bleServiceMode = handoverSelectMessage.getBleServiceMode()
                     if (bleServiceMode.isPresent) {

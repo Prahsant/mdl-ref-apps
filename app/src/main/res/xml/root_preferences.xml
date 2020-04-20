@@ -14,6 +14,11 @@
                 app:key="transfer_method_wifi"
                 app:title="@string/wifi_aware" />
 
+        <CheckBoxPreference
+            app:defaultValue="false"
+            app:key="transfer_method_nfc"
+            app:title="@string/nfc" />
+
     </PreferenceCategory>
 
     <PreferenceCategory

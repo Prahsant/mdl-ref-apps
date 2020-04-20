@@ -42,6 +42,7 @@
     <string name="invalid_de_nfc_error_title">mDL NFC Tag Error</string>
     <string name="ble_disabled_txt">BLE Should be enabled in order to transfer data</string>
     <string name="wifi_disabled_txt">Wifi Should be enabled in order to transfer data</string>
+    <string name="nfc_disabled_txt">NFC Should be enabled in order to transfer data</string>
     <string name="location_permission_btn">Grant Location Permission</string>
     <string name="nfc_permission_btn">Grant NFC Permission</string>
     <string name="enable_ble_btn">Enable BLE</string>
