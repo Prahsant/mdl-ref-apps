@@ -39,6 +39,7 @@ import com.ul.ims.gmdl.databinding.FragmentShareCredentialsNfcBinding
 import com.ul.ims.gmdl.dialog.ConsentDialog
 import com.ul.ims.gmdl.dialog.CustomAlertDialog
 import com.ul.ims.gmdl.nfcengagement.NfcHandler
+import com.ul.ims.gmdl.nfcofflinetransfer.utils.NfcUtils
 import com.ul.ims.gmdl.offlinetransfer.transportLayer.TransferChannels
 import com.ul.ims.gmdl.offlinetransfer.utils.BiometricUtils
 import com.ul.ims.gmdl.offlinetransfer.utils.Resource
@@ -137,7 +138,12 @@ class ShareCredentialsNfcFragment : Fragment() {
                 vm.isWifiEnabled(false)
             }
         }  else if (TransferChannels.NFC == transferMethod) {
-            shouldRequestPermission()
+            if (NfcUtils.isNfcEnabled(requireContext())) {
+                shouldRequestPermission()
+            } else {
+                // Update UI
+                vm.isNfcEnabled(false)
+            }
         } else {
             throw UnsupportedOperationException("Unsupported transfer method")
         }

@@ -138,6 +138,7 @@ class HolderExecutor(
     }
 
     override fun onRequest(req: IRequest?) {
+        Log.d(LOG_TAG, "onRequest")
         if (req?.isValid() == true) {
             request = req
             request?.let {
@@ -151,6 +152,7 @@ class HolderExecutor(
     }
 
     override fun onReceive(data: ByteArray?) {
+        Log.d(LOG_TAG, "onReceive")
         data?.let {
             Log.d(LOG_TAG, "Received Session Establishment")
             Log.d(LOG_TAG, CborUtils.cborPrettyPrint(it))
@@ -163,6 +165,7 @@ class HolderExecutor(
     }
 
     override fun sendData(bytes : ByteArray) {
+        Log.d(LOG_TAG, "sendData data length = ${bytes.size}")
         transportLayer?.write(bytes)
     }
 

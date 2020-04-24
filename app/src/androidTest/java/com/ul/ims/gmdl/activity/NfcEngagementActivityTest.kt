@@ -107,10 +107,10 @@ class NfcEngagementActivityTest {
     )
 
     // NFC Carrier Data Record
-    private val nfcRecordTNF: Short = 0x02 // type = RFC 2046 (MIME)
+    private val nfcRecordTNF: Short = 0x02 // type = RFC 2046 (MIME)  //TODO this should be 0x04 external tyoe
     private val nfcRecordType = "iso.org:18013".toByteArray()
-    private val nfcRecordId = "0".toByteArray()
-    private val nfcRecordPayload = byteArrayOfInts() // payload is ignored
+    private val nfcRecordId = "0".toByteArray() //TODO id shuld be "nfc"
+    private val nfcRecordPayload = byteArrayOfInts() // payload is ignored //TODO payload of 3 bytes mentioned in spec
     private val nfcRecord = NdefRecord(
         nfcRecordTNF,
         nfcRecordType,

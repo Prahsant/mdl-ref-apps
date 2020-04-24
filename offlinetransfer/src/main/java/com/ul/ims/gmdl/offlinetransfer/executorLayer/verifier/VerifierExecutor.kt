@@ -131,6 +131,7 @@ class VerifierExecutor(
     }
 
     override fun onReceive(data: ByteArray?) {
+        Log.d(LOG_TAG, "onReceive data length = ${data?.size}")
         // Here we should check the response received by the holder
         // for now we're always assuming that it's complete
         data?.let {bytesData ->
@@ -178,6 +179,7 @@ class VerifierExecutor(
     }
 
     override fun sendData(bytes : ByteArray) {
+        Log.d(LOG_TAG, "sendData data length = ${bytes?.size}")
         transportLayer?.write(bytes)
     }
 

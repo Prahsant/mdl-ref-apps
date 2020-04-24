@@ -18,6 +18,7 @@ package com.ul.ims.gmdl.viewmodel
 
 import android.app.Application
 import android.nfc.Tag
+import android.nfc.tech.IsoDep
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -134,7 +135,8 @@ class OfflineTransferStatusViewModel(val app : Application) : AndroidViewModel(a
     fun setupNfcVerifier(
         deviceEngagement: DeviceEngagement,
         requestItems: Array<String>,
-        nfcTag: Tag) {
+        nfcTag: IsoDep
+    ) {
         Log.d("OfflineTransferStatusViewModel", "Setting up NfcVerifier.")
         doAsync {
             coseKey = deviceEngagement.security?.coseKey
@@ -148,14 +150,10 @@ class OfflineTransferStatusViewModel(val app : Application) : AndroidViewModel(a
                     .setNfcTag(nfcTag)
                     .setCoseKey(key)
 
-                try {
-                    offlineTransferVerifier = builder.build()
-                    offlineTransferVerifier?.setupVerifier(key, requestItems, deviceEngagement)
-                    Log.d(
-                        "OfflineTransferStatusViewModel",
-                        "Setup NfcVerifier done from CborManager also."
-                    )
-                } catch (e: Exception) { e.printStackTrace() }
+                offlineTransferVerifier = builder.build()
+                offlineTransferVerifier?.setupVerifier(key, requestItems, deviceEngagement)
+                Log.d("OfflineTransferStatusViewModel", "Setup NfcVerifier done from CborManager also.")
+
                 uiThread {
                     offlineTransferVerifier?.data?.let {livedata ->
                         liveDataMerger.addSource(livedata) {

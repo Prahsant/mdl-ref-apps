@@ -32,7 +32,7 @@ buildscript {
         rxjava_version = '2.2.14'
         androidx_annotation_version = '1.1.0'
         cardview_version = '1.0.0'
-        android_gradle_plugin = '3.5.3'
+        android_gradle_plugin = '3.6.2'
         androidx_biometrics = '1.0.0'
         androidx_preference = '1.1.0'
         androidx_room_version = '2.2.2'

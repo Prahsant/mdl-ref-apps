@@ -123,7 +123,7 @@ class NfcEngagementActivity : AppCompatActivity() {
                 ?: return null // NDEF is not supported by this Tag.
 
             val ndefMessage = ndef.cachedNdefMessage
-
+            
             val handoverSelectMessage: HandoverSelectMessage
             try {
                 handoverSelectMessage = HandoverSelectMessage(ndefMessage, ndef)

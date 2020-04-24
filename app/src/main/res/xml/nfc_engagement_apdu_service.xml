@@ -22,6 +22,7 @@
 
     <aid-group android:description="@string/engagement_aid_group_desc" android:category="other">
         <aid-filter android:name="D2760000850101"/> <!-- NFC Type 4 Tag -->
+        <aid-filter android:name="A0000002480400"/> <!-- NFC Type 4 Tag -->
     </aid-group>
 
 </host-apdu-service>

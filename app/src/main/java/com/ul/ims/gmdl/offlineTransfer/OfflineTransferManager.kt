@@ -18,6 +18,7 @@ package com.ul.ims.gmdl.offlineTransfer
 
 import android.content.Context
 import android.nfc.Tag
+import android.nfc.tech.IsoDep
 import com.ul.ims.gmdl.cbordata.security.CoseKey
 import com.ul.ims.gmdl.offlinetransfer.config.AppMode
 import com.ul.ims.gmdl.offlinetransfer.config.BleServiceMode
@@ -39,7 +40,7 @@ class OfflineTransferManager {
         // coseKey
         private var coseKey: CoseKey? = null
         //NFC Tag
-        private var nfcTag: Tag? = null
+        private var nfcTag: IsoDep? = null
 
         fun setCoseKey(coseKey: CoseKey) = apply {
             this.coseKey = coseKey
@@ -65,7 +66,7 @@ class OfflineTransferManager {
             this.bleServiceMode = bleServiceMode
         }
 
-        fun setNfcTag(nfcTag : Tag) = apply {
+        fun setNfcTag(nfcTag : IsoDep) = apply {
             this.nfcTag = nfcTag
         }
 

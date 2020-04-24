@@ -16,9 +16,12 @@
 
 package com.ul.ims.gmdl.nfcengagement
 
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
 import android.nfc.cardemulation.HostApduService
 import android.os.Bundle
+import android.os.IBinder
 import android.util.Log
 import com.ul.ims.gmdl.nfcengagement.NfcConstants.Companion.createBLEStaticHandoverRecord
 import com.ul.ims.gmdl.nfcengagement.NfcConstants.Companion.createNfcStaticHandoverRecord
@@ -182,7 +185,7 @@ class NfcHandler : HostApduService() {
             CommandType.READ_BINARY -> handleReadBinary(commandApdu)
             CommandType.UPDATE_BINARY -> handleUpdateBinary()
             CommandType.OTHER -> statusWordInstructionNotSupported
-            CommandType.ENVELOPE -> TODO()
+            CommandType.ENVELOPE -> handleEnvelope(commandApdu)
             CommandType.GET_RESPONSE -> TODO()
         }
 
@@ -267,6 +270,33 @@ class NfcHandler : HostApduService() {
 
     private fun handleUpdateBinary(): ByteArray {
         return statusWordInstructionNotSupported
+    }
+
+    private fun handleEnvelope(commandApdu: ByteArray?): ByteArray {
+        Log.d(TAG, "handleEnvelope -> " + toHexString(commandApdu))
+        commandApdu?.let { apdu ->
+            if (apdu.size < 4) {
+                return statusWordEndOfFileReached
+            }
+            Log.d(TAG, "data length in hex -> " + toHexString(byteArrayOf(apdu[4])))
+
+            val dataLength = toInt(apdu[4])
+            Log.d(TAG, "data length -> $dataLength")
+
+            if(apdu.size < 4 + dataLength)
+                return statusWordEndOfFileReached
+
+            val data = apdu.copyOfRange(5, dataLength)
+            Log.d(TAG, "data -> " + toHexString(data))
+
+            var dataIntent = Intent("com.ul.ims.gmdl.NfcHandler")
+            dataIntent.putExtra("data", data)
+            baseContext.sendBroadcast(dataIntent)
+            Log.d(TAG, "dataIntent broadcast")
+            return statusWordOK
+        }
+
+        return statusWordEndOfFileReached
     }
 
     override fun onDeactivated(p0: Int) {

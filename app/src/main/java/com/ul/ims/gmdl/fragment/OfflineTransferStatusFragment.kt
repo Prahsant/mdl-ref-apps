@@ -48,6 +48,7 @@ import com.ul.ims.gmdl.viewmodel.OfflineTransferStatusViewModel
 import kotlinx.android.synthetic.main.fragment_offline_transfer_status.*
 import java.util.*
 
+
 /**
  * A simple [Fragment] subclass.
  *
@@ -67,6 +68,8 @@ class OfflineTransferStatusFragment : Fragment() {
     private val REQUEST_ENABLE_BT = 7890
 
     private var nfcAdapter: NfcAdapter? = null
+    private val READER_FLAG = (NfcAdapter.FLAG_READER_NFC_A
+            or NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK)
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -93,10 +96,13 @@ class OfflineTransferStatusFragment : Fragment() {
     override fun onResume() {
         super.onResume()
 
+        val options = Bundle()
+        options.putInt(NfcAdapter.EXTRA_READER_PRESENCE_CHECK_DELAY, 5000)
+
         nfcAdapter?.enableReaderMode(activity,
                                     ReaderModeCallback(),
-                                FLAG_READER_NFC_A or FLAG_READER_SKIP_NDEF_CHECK,
-                                null)
+                                    READER_FLAG,
+                                    options)
     }
 
     override fun onPause() {
@@ -154,7 +160,7 @@ class OfflineTransferStatusFragment : Fragment() {
         }
     }
 
-    private fun setupNfcVerifier(nfcTag: Tag) {
+    private fun setupNfcVerifier(nfcTag: IsoDep) {
         deviceEngagement?.let {de ->
             requestItems?.let { req ->
                 vm.setupNfcVerifier(de, req, nfcTag)
@@ -278,9 +284,9 @@ class OfflineTransferStatusFragment : Fragment() {
         startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT)
     }
 
-    private inner class VerifierSetupTask : AsyncTask<Tag, Void, Void>() {
+    private inner class VerifierSetupTask : AsyncTask<IsoDep, Void, Void>() {
 
-        override fun doInBackground(vararg params: Tag): Void? {
+        override fun doInBackground(vararg params: IsoDep): Void? {
             val tag = params[0]
             setupNfcVerifier(tag)
             return null
@@ -292,7 +298,7 @@ class OfflineTransferStatusFragment : Fragment() {
 
             // Tell the adapter to ignore this tag for any consecutive reads. debounceMs needs to be
             //  greater than the polling interval of the adapter
-            nfcAdapter!!.ignore(tag, 1000, null, null)
+            nfcAdapter!!.ignore(tag, 5000, null, null)
 
             val techList = tag.techList
 
@@ -300,7 +306,8 @@ class OfflineTransferStatusFragment : Fragment() {
 
             for (tech in techList) {
                 if (IsoDep::class.java.name == tech) {
-                    VerifierSetupTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, tag)
+                    var isoDep = IsoDep.get(tag)
+                    VerifierSetupTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, isoDep)
                     break
                 }
             }

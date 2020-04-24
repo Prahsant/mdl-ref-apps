@@ -123,6 +123,7 @@ dependencies {
 
     // Issuer Authority Module
     implementation project(path: ':issuerauthority')
+    implementation project(path: ':nfcofflinetransfer')
 }
 
 sonarqube {

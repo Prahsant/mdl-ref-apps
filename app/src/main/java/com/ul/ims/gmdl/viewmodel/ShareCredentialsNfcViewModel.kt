@@ -325,12 +325,10 @@ class ShareCredentialsNfcViewModel(val app: Application) : AndroidViewModel(app)
                     .setTransferChannel(TransferChannels.NFC)
                     .setCoseKey(coseKey)
 
-                try {
-                    iofflineTransferHolder = builder.build()
-                    iofflineTransferHolder?.let { holder ->
-                        setupOfflineTransferHolder(holder, deviceEngagement)
-                    }
-                } catch (e: Exception) { e.printStackTrace() }
+                iofflineTransferHolder = builder.build()
+                iofflineTransferHolder?.let { holder ->
+                    setupOfflineTransferHolder(holder, deviceEngagement)
+                }
             }
         }
     }
